@@ -69,5 +69,5 @@ wandb:
     team: yieldinc
     
 huggingface:
-    cache_dir: /notebooks/.cache/huggingface
+    cache_dir: /storage/.cache/huggingface
 
