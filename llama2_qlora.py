@@ -52,6 +52,7 @@ BATCH_SIZE = config.get('batch_size', 1)
 N_EPOCHS = config.get('n_epochs', 25)
 BASE_RUN_NAME = config['base_run_name']
 MODEL_ID = config['model_id']
+SAVE_TRAIN_DATASET = config.get('save_train_dataset', False)
 SAVE_DATA_POINTS = config.get('save_data_points', 2000)
 WANDB_PROJECT = config.get('wandb', {}).get('project')
 WANDB_TEAM = config.get('wandb', {}).get('team')
@@ -96,14 +97,17 @@ model = prepare_model_for_kbit_training(model)
 model = get_peft_model(model, LoraConfig(**config.get('lora',{})))
 print_trainable_parameters(model)
 
-train_dataset = load_datasets(args.file, system_prompt=SYSTEM_PROMPT)
-
 output_root = "outputs/toy" if TOY else "outputs"
 run_name = (
     f"{datetime.today().date()}_{BASE_RUN_NAME}_{generate_random_string(5).lower()}"
 )
+sql_uri = f"sqlite:///../../storage/{BASE_RUN_NAME}.db" # TODO host it
 output_dir = f"{output_root}/{run_name}"
+if SAVE_TRAIN_DATASET: print("SQL URI: ", sql_uri)
+print("run name: ", run_name)
 print("output_dir:", output_dir)
+
+train_dataset = load_datasets(args.file, run_name, sql_uri, save_train_dataset=SAVE_TRAIN_DATASET, system_prompt=SYSTEM_PROMPT)
 save_steps = SAVE_DATA_POINTS // (BATCH_SIZE * GRADIENT_ACCUMULATION_STEPS)
 
 wandb.init(entity=WANDB_TEAM, project=WANDB_PROJECT, name=run_name, config=config)
