@@ -3,6 +3,7 @@ qlora: true
 base_run_name: llama2-7b-{method}
 
 batch_size: 8
+save_train_dataset: false
 save_data_points: 5000
 gradient_accumulation_steps: 4
 model_id: meta-llama/Llama-2-7b-chat-hf

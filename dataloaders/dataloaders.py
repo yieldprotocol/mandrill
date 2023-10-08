@@ -90,12 +90,17 @@ def load_dataset(dataset_meta: DatasetMeta, split='train', format_fn=to_llama, s
     dataset = dataset.map(lambda row: to_llama(row, format=dataset_meta['format'], system_prompt=system_prompt))
     return dataset
 
-def load_datasets(yaml_path, system_prompt=SYSTEM_PROMPT, do_concat=True):
+def load_datasets(yaml_path, run_name, sql_uri, system_prompt=SYSTEM_PROMPT, save_train_dataset=False, do_concat=True):
     parsed_datasets = parse_datasets(yaml_path)
     
+    if save_train_dataset and not do_concat:
+        raise ValueError(f"Only concatenated dataset can be saved.")
+        
     if not do_concat:
         return {dataset['name']: load_dataset(dataset, system_prompt=system_prompt) for dataset in parsed_datasets}
     
     else:
         loaded_datasets = [load_dataset(dataset, system_prompt=system_prompt) for dataset in parsed_datasets]
-        return datasets.concatenate_datasets(loaded_datasets)
+        concat_dataset = datasets.concatenate_datasets(loaded_datasets)
+        if save_train_dataset: concat_dataset.to_sql(run_name, sql_uri)
+        return concat_dataset
