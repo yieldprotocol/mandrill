@@ -54,6 +54,7 @@ BASE_RUN_NAME = config['base_run_name']
 MODEL_ID = config['model_id']
 SAVE_TRAIN_DATASET = config.get('save_train_dataset', False)
 SAVE_DATA_POINTS = config.get('save_data_points', 2000)
+VAL_FRAC = config.get('val_frac', 0.125)
 WANDB_PROJECT = config.get('wandb', {}).get('project')
 WANDB_TEAM = config.get('wandb', {}).get('team')
 GRADIENT_ACCUMULATION_STEPS = config.get('gradient_accumulation_steps', 1)
@@ -107,7 +108,9 @@ if SAVE_TRAIN_DATASET: print("SQL URI: ", sql_uri)
 print("run name: ", run_name)
 print("output_dir:", output_dir)
 
-train_dataset = load_datasets(args.file, run_name, sql_uri, save_train_dataset=SAVE_TRAIN_DATASET, system_prompt=SYSTEM_PROMPT)
+dataset = load_datasets(args.file, run_name, sql_uri, save_train_dataset=SAVE_TRAIN_DATASET, system_prompt=SYSTEM_PROMPT)
+dataset_split_dict = dataset.train_test_split(test_size=VAL_FRAC)
+train_dataset, val_dataset = dataset_split_dict['train'], dataset_split_dict['test']
 save_steps = SAVE_DATA_POINTS // (BATCH_SIZE * GRADIENT_ACCUMULATION_STEPS)
 
 wandb.init(entity=WANDB_TEAM, project=WANDB_PROJECT, name=run_name, config=config)
@@ -119,7 +122,7 @@ trainer = MandrillTrainer(
     model_id=MODEL_ID, 
     hf_api_token=HUGGINGFACE_API_TOKEN,
     train_dataset=train_dataset,
-    eval_dataset=train_dataset,
+    eval_dataset=val_dataset,
     args=TrainingArguments(
         num_train_epochs=N_EPOCHS,
         per_device_train_batch_size=BATCH_SIZE,

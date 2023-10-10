@@ -10,6 +10,7 @@ model_id: meta-llama/Llama-2-7b-chat-hf
 fp16: false
 n_epochs: 25
 lr: 2.0e-4
+val_frac: 0.2
 
 system_prompt: "You are a helpful AI Assistant."
 
