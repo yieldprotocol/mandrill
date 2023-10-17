@@ -16,3 +16,4 @@ transformers @ git+https://github.com/huggingface/transformers.git@95b374952dc27
 wandb==0.15.10
 scipy==1.11.2
 tiktoken==0.5.1
+SQLAlchemy==2.0.22
