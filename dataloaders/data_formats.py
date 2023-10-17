@@ -108,6 +108,49 @@ class QuestionResponse(Chat):
         ]
     
 @dataclass(frozen=True, kw_only=True)
+class Platypus(Chat):
+    input: str
+    output: str
+    instruction: str
+    data_source: str
+    
+    def to_llama_prompt(self, system_prompt=SYSTEM_PROMPT) -> Dialog:
+        return [
+            {'role': 'system', 'content': self.system_prompt or system_prompt},
+            {'role': 'user', 'content': self.instruction},
+        ]
+
+    def to_llama_target(self) -> Dialog:
+        return [
+            {'role': 'assistant', 'content': self.output}
+        ]
+    
+@dataclass(frozen=True, kw_only=True)
+class TinySeries(Chat):
+    prompt: str
+    main_topic: str
+    subtopic: str
+    adjective: str
+    action_verb: str
+    scenario: str
+    target_audience: str
+    programming_language: str
+    common_sense_topic: str
+    idx: str
+    response: str
+    
+    def to_llama_prompt(self, system_prompt=SYSTEM_PROMPT) -> Dialog:
+        return [
+            {'role': 'system', 'content': self.system_prompt or system_prompt},
+            {'role': 'user', 'content': self.prompt},
+        ]
+
+    def to_llama_target(self) -> Dialog:
+        return [
+            {'role': 'assistant', 'content': self.response}
+        ]
+    
+@dataclass(frozen=True, kw_only=True)
 class Llama2Turn:
     instruction: Dialog
     response: Dialog
@@ -116,6 +159,8 @@ class Llama2Turn:
 NAME2CLS = {
     'prompt-response': PromptResponse,
     'question-response': QuestionResponse,
+    'tinyseries': TinySeries,
+    'platypus': Platypus,
     'alpaca': Alpaca,
     'openchat': OpenChat,
 }

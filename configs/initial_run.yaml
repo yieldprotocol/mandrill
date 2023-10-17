@@ -2,24 +2,24 @@ toy: false
 qlora: true
 base_run_name: llama2-7b-{method}
 
-batch_size: 8
-save_train_dataset: false
+batch_size: 16
+save_train_dataset: true
 save_data_points: 5000
-gradient_accumulation_steps: 4
+gradient_accumulation_steps: 2
 model_id: meta-llama/Llama-2-7b-chat-hf
 fp16: false
-n_epochs: 25
+n_epochs: 3
 lr: 2.0e-4
 val_frac: 0.2
 
-system_prompt: "You are a helpful AI Assistant."
+system_prompt: "You are a helpful AI Assistant. You can solve complex problems with reasoning step-by-step."
 
 # LoRA params to `peft.LoraConfig`
 # https://github.com/huggingface/peft/blob/f66c3859b094b4244bcafad191f5daff91f4bfb4/src/peft/tuners/lora/config.py#L24
 lora:
-    r: 8 # rank
+    r: 16 # rank
     lora_alpha: 32
-    target_modules: [q_proj, k_proj, v_proj]
+    target_modules: ['q_proj','k_proj','v_proj','gate_proj','up_proj','down_proj','lm_head']
     lora_dropout: 0.05
     bias: "none"
     task_type: CAUSAL_LM
@@ -28,12 +28,17 @@ datasets:
   - name: agentcode
     hf_path: Alignment-Lab-AI/agentcode
     format: prompt-response
-    sample_size: 5000
+    sample_size: 25000
     
-  - name: orca
-    hf_path: Open-Orca/OpenOrca
-    format: question-response
-    sample_size: 5000
+#   - name: orca
+#     hf_path: Open-Orca/OpenOrca
+#     format: question-response
+#     sample_size: 5000
+    
+#   - name: Platypus
+#     hf_path: garage-bAInd/Open-Platypus
+#     format: platypus
+#     sample_size: 5000
     
   # - name: sharegpt4-english
   #   local_path: data/sharegpt4_english.jsonl
@@ -43,7 +48,7 @@ eval:
     temperature: 0.2
     max_new_tokens: 256
     top_p: 0.2
-    tasks_list: ['agieval']
+    tasks_list: []
     agieval_datasets:
             # - "gaokao-geography"
             # - "gaokao-history"
@@ -72,4 +77,3 @@ wandb:
     
 huggingface:
     cache_dir: /storage/.cache/huggingface
-

@@ -27,11 +27,14 @@ class MandrillTrainer(Trainer):
         self.oom_count = 0
         super().__init__(*args, **kwargs)
 
-    def compute_loss(self, model, inputs):
+    def compute_loss(self, model, inputs, return_outputs=False):
         with self.handle_oom():
             outputs = model(**inputs)
-            return outputs.loss
-        return torch.tensor(0.0, requires_grad=True)
+            return (outputs.loss, outputs) if return_outputs else outputs.loss
+        # TODO: fix this proxy
+        loss = torch.zeros(inputs.input_ids.size()[0], 1, requires_grad=True).mean().to(inputs.input_ids.device)
+        logits = torch.zeros(inputs.input_ids.size()[0], 10, 32000, requires_grad=True).to(inputs.input_ids.device)
+        return (loss, {'loss': loss, 'logits': logits}) if return_outputs else loss
 
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         with self.handle_oom():
@@ -44,7 +47,7 @@ class MandrillTrainer(Trainer):
         '''
         
         if dataloader is not None:
-            super().evaluation_loop(dataloader, description, prediction_loss_only, **kwargs)
+            exe = super().evaluation_loop(dataloader, description, prediction_loss_only, **kwargs)
         
         # if isinstance(self.model, PeftModelForCausalLM): self.model = self.model.merge_and_unload()
         model = self._wrap_model(self.model, training=False, dataloader=dataloader)
@@ -79,7 +82,9 @@ class MandrillTrainer(Trainer):
             #                          system_prompt=self.eval_args.system_prompt, temperature=self.eval_args.temperature, 
             #                          max_new_tokens=self.eval_args.max_new_tokens, top_p=self.eval_args.top_p,
             #                          batch_size=self.args.per_device_eval_batch_size,)
-        return EvalLoopOutput(predictions=None, label_ids=None, metrics={'fake_metric': 0.0}, num_samples=0)
+        metrics = exe.metrics
+        # metrics['task_metric'] = 0.0 # TODO: add AGIEval and AgentBench metrics
+        return EvalLoopOutput(predictions=exe.predictions, label_ids=exe.label_ids, metrics=metrics, num_samples=exe.num_samples)
 
     @contextmanager
     def handle_oom(self):
