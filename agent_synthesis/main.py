@@ -15,7 +15,7 @@ from utils import load_queue_from_file, save_queue_to_file, queue_to_dict, save_
 from env_list import all_environments_description
 
 stop_threads = False
-OPENAI_API_KEY = "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" #getpass()
+OPENAI_API_KEY = getpass()
 os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
 
 # Worker function
