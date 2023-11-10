@@ -1,5 +1,4 @@
 import queue
-from tqdm import tqdm
 
 from langchain.schema import HumanMessage
 
@@ -37,29 +36,26 @@ Software Environment: {}
 Your Task: {}
 '''
 
-def create_agent_conversation(tasks, model, num_turns=20): 
-    for i in tqdm(range(len(tasks)), desc="running agent interactions"):
-        environment_prompt = ENVIRONMENT_PROMPT_TEMPLATE.format(tasks[i]['environment'], tasks[i]['io'], tasks[i]['state'])
-        agent_prompt = AGENT_PROMPT_TEMPLATE.format(tasks[i]['environment'], tasks[i]['task'])
-        agent_messages = [
-            HumanMessage(content=agent_prompt),
-        ]
+def create_agent_conversation(task, model, num_turns=20):    
+    environment_prompt = ENVIRONMENT_PROMPT_TEMPLATE.format(task['environment'], task['io'], task['state'])
+    agent_prompt = AGENT_PROMPT_TEMPLATE.format(task['environment'], task['task'])
+    agent_messages = [
+        HumanMessage(content=agent_prompt),
+    ]
 
-        environment_messages = [
-            HumanMessage(content=environment_prompt)
-        ]
+    environment_messages = [
+        HumanMessage(content=environment_prompt)
+    ]
 
-        for _ in range(num_turns):
-            environment_result = model.predict_messages(environment_messages)
-            print('Env:', environment_result)
-            environment_messages.append(environment_result)
-            agent_messages.append(HumanMessage(content=environment_result.content))
-            agent_response = model.predict_messages(agent_messages)
-            agent_result = agent_response.content.split("ACTION:")[1].strip()
-            environment_messages.append(HumanMessage(content=agent_result))
-            agent_messages.append(agent_response)
-            print('Agent:', agent_result)
-            if "success(" in agent_result:
-                break
-        tasks[i]["conversation"] = agent_messages
-    return tasks
+    for _ in range(num_turns):
+        environment_result = model.predict_messages(environment_messages)
+        environment_messages.append(environment_result)
+        agent_messages.append(HumanMessage(content=environment_result.content))
+        agent_response = model.predict_messages(agent_messages)
+        agent_result = agent_response.content.split("ACTION:")[1].strip()
+        environment_messages.append(HumanMessage(content=agent_result))
+        agent_messages.append(agent_response)
+        if "success(" in agent_result:
+            break
+    task["conversation"] = agent_messages
+    return task
