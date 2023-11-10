@@ -19,16 +19,19 @@ def save_queue_to_file(q, filename):
         pickle.dump(list(q.queue), file)
 
 def load_queue_from_file(filename):
-    try:
-        q = queue.Queue()
-        with open(filename, 'rb') as file:
-            the_list = pickle.load(file)
-            for item in the_list:
-                q.put(item)
-        return q
-    except (FileNotFoundError, EOFError):
-        return queue.Queue()
+    q = queue.Queue()
+    with open(filename, 'rb') as file:
+        the_list = pickle.load(file)
+        for item in the_list:
+            q.put(item)
+    return q
     
+def queue_to_dict(output_queue):
+    resulting_dicts = []
+    while not output_queue.empty():
+        resulting_dicts.append(output_queue.get())
+    return resulting_dicts
+
 def format_single_chat(chat_data):
     # Use a function to replace newlines with <br> tags
     def format_text(text):
@@ -66,9 +69,3 @@ def format_single_chat(chat_data):
     formatted_html += '</div>'
     
     return formatted_html
-
-def queue_to_dict(output_queue):
-    resulting_dicts = []
-    while not output_queue.empty():
-        resulting_dicts.append(output_queue.get())
-    return resulting_dicts
