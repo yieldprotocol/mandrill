@@ -52,7 +52,7 @@ Can you think of a long list of twenty-five tasks that can be executed in that e
 
 It's important that the tasks are diverse and use all of the possible features of the environment. Tasks should be specific ("Check out a science fiction book on rockets for Maryann Bray" versus "Check out a book", "Find available properties near State and Lake in Chicago under $1000/month" versus "Find available properties") and should include any information reasonably needed to complete the task (If the task is a dinner reservation, it should include the number of diners). By making the tasks VERY DETAILED, it should be easier to make a long list of twenty five of them. Each task should be for a different end user. Avoid generic names for things (John Doe, Acme Corporation), be creative. 
 
-For each task, include a plain text description of the software state. Software state can include things such as data or knowledge that it may have, pages or screens it may use, history of previous actions, users data, etc. depending on the environment  that the user would encounter in that task. (Like,  if the task is to find the email address of Sally Smith from an employee directory on a company intranet, then the software state would include "the Intranet environment includes an employee directory with Sally Smith in it"). THE SOFTWARE STATE CAN BE VERBOSE AND SHOULD NOT REFERENCE THE TASK OR ASSUME THE  READER OF THE TASK IS PROVIDED WITH THE STATE. Format in json like this: {{"task": "[task]","state":"[state]"\}}, etc. I'd love a list of like twenty-five tasks and states.
+For each task, include a plain text description of the software state. Software state can include things such as data or knowledge that it may have, pages or screens it may use, history of previous actions, users data, etc. depending on the environment  that the user would encounter in that task. (Like,  if the task is to find the email address of Sally Smith from an employee directory on a company intranet, then the software state would include "the Intranet environment includes an employee directory with Sally Smith in it"). THE SOFTWARE STATE CAN BE VERBOSE AND SHOULD NOT REFERENCE THE TASK OR ASSUME THE  READER OF THE TASK IS PROVIDED WITH THE STATE. Format in json like this: {{"task": "[task]","state":"[state]"\}}, etc. I'd love a list of like five tasks and states.
 '''
 
 CRITIC_SYSTEM_PROMPT = \
@@ -107,6 +107,7 @@ def create_env(environment_description, model, num_turns=1, apply_critic=False):
             HumanMessage(content=design_prompt_filled)
         ]
     environment_design_result = model.predict_messages(design_messages)
+    print('environment_design_result =', environment_design_result)
     tasks_generation_filled = TASKS_GENERATION_PROMPT.format(environment_description, environment_design_result.content)
     tasks_generation_messages = [
             HumanMessage(content=tasks_generation_filled)
@@ -125,5 +126,6 @@ def create_env(environment_description, model, num_turns=1, apply_critic=False):
             "state": eval(env)['state']
             
         }
+        print('created Env: ', dict_)
         tasks_and_state.append(dict_)
     return tasks_and_state

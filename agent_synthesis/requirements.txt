@@ -1,0 +1,4 @@
+openai==0.28
+langchain==0.0.326
+pdfkit==1.0.0
+tqdm==4.64.1
