@@ -107,6 +107,7 @@ def create_env(environment_description, model, num_turns=1, apply_critic=False):
             HumanMessage(content=design_prompt_filled)
         ]
     environment_design_result = model.predict_messages(design_messages)
+    print('environment_design_result =', environment_design_result.content)
     tasks_generation_filled = TASKS_GENERATION_PROMPT.format(environment_description, environment_design_result.content)
     tasks_generation_messages = [
             HumanMessage(content=tasks_generation_filled)
@@ -125,5 +126,6 @@ def create_env(environment_description, model, num_turns=1, apply_critic=False):
             "state": eval(env)['state']
             
         }
+        print('created Env: ', dict_)
         tasks_and_state.append(dict_)
     return tasks_and_state
