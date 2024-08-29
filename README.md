@@ -1,3 +1,6 @@
+A library for finetuning LLMs (particularly the Llama family) and validating on AgentBench in one go.
+
+
 ## Setup
 
 * Initialize the submodules
